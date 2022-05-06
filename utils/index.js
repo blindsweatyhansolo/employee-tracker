@@ -82,9 +82,32 @@ const viewDepartments = () => {
     const sql = `SELECT * FROM department`;
 
     db.query(sql, (err, res) => {
+        if (err) throw err;
         console.table(res);
         viewDepartmentSection();
     });
+};
+
+const addDepartment = () => {
+    // prompt for new dept name, then insert into dept table
+    return inquirer
+      .prompt(
+        {
+          name: "deptName",
+          message: "What is the new department's name?",
+          validate: input => input ? true : "Department name is required."
+        }
+      )
+      .then((answer) => {
+          db.query(`
+            INSERT INTO department SET ?`,
+            { name: answer.deptName },
+            (err, res) => {
+              if (err) throw err;
+              console.table(`${res.affectedRows} department created`);
+              viewDepartments();
+            })
+      });
 };
 
 // VIEW SALARIES BY DEPARTMENT

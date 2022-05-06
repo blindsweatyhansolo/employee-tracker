@@ -247,11 +247,15 @@ const viewRoleSection = () => {
 
 // VIEW ALL ROLES
 const viewRoles = () => {
-    db.query(`SELECT * FROM role`, (err, res) => {
-        if (err) throw err;
-        console.table(res);
-        // return to role section
-        viewRoleSection();
+    db.query(`SELECT title, role.id, department.name AS department, salary 
+            FROM role 
+            LEFT JOIN department 
+            ON role.department_id = department.id`, 
+            (err, res) => {
+              if (err) throw err;
+              console.table(res);
+              // return to role section
+              viewRoleSection();
     });
 };
 
@@ -419,7 +423,16 @@ const viewEmployeeSection = () => {
 
 // VIEW ALL EMPLOYEES
 const viewEmployees = () => {
-    db.query(`SELECT * FROM employee`, (err, res) => {
+    const sql = `SELECT employee.id AS ID, 
+                CONCAT(employee.first_name, " ", employee.last_name) AS Name, 
+                role.title AS Role,
+                role.salary AS Salary,
+                department.name AS Department,
+                CONCAT(e.first_name, ' ' ,e.last_name) AS Manager FROM employee
+                INNER JOIN role on role.id = employee.role_id 
+                INNER JOIN department on department.id = role.department_id 
+                LEFT JOIN employee e on employee.manager_id = e.id`
+    db.query(sql, (err, res) => {
         if (err) throw err;
         console.table(res);
         viewEmployeeSection();

@@ -9,7 +9,7 @@ VALUES
 
 INSERT INTO role (title, salary, department_id)
 VALUES
-("IT Manager", 150000, 1),
+("I.T. Manager", 250000, 1),
 ("H.R. Director", 180000, 2),
 ("Lead Technician", 155000, 3),
 ("Project Manager", 120000, 4),

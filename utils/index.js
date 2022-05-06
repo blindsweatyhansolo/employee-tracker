@@ -429,6 +429,98 @@ const viewEmployees = () => {
 // VIEW EMPLOYEES BY MANAGER
 // VIEW EMPLOYEES BY DEPARTMENT
 // ADD AN EMPLOYEE
+const addEmployee = () => {
+    // array to hold potential managers, including NONE for new managers
+    let managerName = ["None"];
+    // array for full manager record (full name and id)
+    let managers = [];
+    // empty array to hold roles
+    let roles = [];
+
+    // pull all role titles for prompt
+    let roleQuery = `SELECT title FROM role`;
+    db.query(roleQuery, (err, res) => {
+        // loop through response, push role title to array
+        for (var i = 0; i < res.length; i++) {
+            roles.push(res[i].title);
+        }
+    });
+
+    // pull names of managers from employees for prompt
+    // only employees whose manager_id is NULL (NULL = employee is a manager)
+    // CONCAT first and last name into one string
+    let managerQuery = `SELECT id, CONCAT(first_name, " ", last_name) 
+                        AS full_name
+                        FROM employee 
+                        WHERE manager_id IS NULL`;
+    db.query(managerQuery, (err, res) => {
+        // loop through response, push to manager array
+        for (var i = 0; i < res.length; i++) {
+            managerName.push(res[i].full_name);
+            managers.push(res[i]);
+        }
+    });
+
+    // prompt for new employee full name, role (sets id), manager (sets id)
+    return inquirer
+      .prompt([
+          {
+            name: "employeeFirstName",
+            message: "Employee's first name?",
+            validate: input => input ? true : "First name is required"
+          },
+          {
+            name: "employeeLastName",
+            message: "Employee's last name?",
+            validate: input => input ? true : "Last name is required"
+          },
+          {
+            name: "employeeRole",
+            message: "What is this employee's role?",
+            type: "list",
+            choices: roles
+          },
+          {
+            name: "employeeManager",
+            message: "Who is this employee's manager?",
+            type: "list",
+            choices: managerName
+          }
+      ])
+      .then((answers) => {
+        // get manager id from answer, NULL if "None"
+        managers.forEach((manager) => {
+            if (manager.full_name === answers.employeeManager) {
+                answers.employeeManager = manager.id;
+            } else if (answers.employeeManager === "None") {
+                answers.employeeManager = null;
+            }
+        });
+
+        // get role id from answer
+        db.query(`SELECT id FROM role WHERE title = "${answers.employeeRole}"`, 
+          (err, res) => {
+            if (err) throw err;
+            let empRoleId = res[0].id;
+
+            // insert into table using gathered values
+            db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) 
+                    VALUES (?,?,?,?)`,
+              [
+                answers.employeeFirstName,
+                answers.employeeLastName,
+                empRoleId,
+                answers.employeeManager
+              ],
+              (err, res) => {
+                  if (err) throw err;
+                  console.log(`New employee added`);
+                  // re-run show employee table for verification, returns to employee section nav
+                  viewEmployees();
+              });
+          });
+      });
+};
 // DELETE AN EMPLOYEE
 // UPDATE AN EMPLOYEE ROLE
 // UPDATE AN EMPLOYEE'S MANAGER

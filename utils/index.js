@@ -370,7 +370,62 @@ const removeRole = () => {
 
 // -- EMPLOYEE FUNCTIONS -- //
 // EMPLOYEE NAV
+const viewEmployeeSection = () => {
+    return inquirer
+      .prompt({
+          name: "employeeChoice",
+          message: "What would you like to do?",
+          type: "list",
+          choices: [
+              "View all employees",
+              "View employees by Manager",
+              "View employees by Department",
+              "Add new employee",
+              "Remove an employee",
+              "Update an employee's Role",
+              "Update an employee's Manager",
+              "Exit"
+          ]
+      })
+      .then((choice) => {
+          switch (choice.employeeChoice){
+              case "View all employees" :
+                  viewEmployees();
+                  break;
+              case "View employees by Manager" :
+                  viewEmployeesByManager();
+                  break;
+              case "View employees by Department" :
+                  viewEmployeesByDept();
+                  break;
+              case "Add new employee" :
+                  addEmployee();
+                  break;
+              case "Remove an employee" :
+                  removeEmployee();
+                  break;
+              case "Update an employee's Role" :
+                  updateEmpRole();
+                  break;
+              case "Update an employee's Manager" :
+                  updateEmpManager();
+                  break;
+              case "Exit" :
+                  startPrompts();
+                  break;
+          }
+      })
+};
+
 // VIEW ALL EMPLOYEES
+const viewEmployees = () => {
+    db.query(`SELECT * FROM employee`, (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        viewEmployeeSection();
+    });
+};
+
 // VIEW EMPLOYEES BY MANAGER
 // VIEW EMPLOYEES BY DEPARTMENT
 // ADD AN EMPLOYEE

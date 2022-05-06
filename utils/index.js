@@ -423,6 +423,7 @@ const viewEmployeeSection = () => {
 
 // VIEW ALL EMPLOYEES
 const viewEmployees = () => {
+    // fixed issues by using INNER JOIN for joining values within the same table
     const sql = `SELECT employee.id AS ID, 
                 CONCAT(employee.first_name, " ", employee.last_name) AS Name, 
                 role.title AS Role,
@@ -439,8 +440,6 @@ const viewEmployees = () => {
     });
 };
 
-// VIEW EMPLOYEES BY MANAGER
-// VIEW EMPLOYEES BY DEPARTMENT
 // ADD AN EMPLOYEE
 const addEmployee = () => {
     // array to hold potential managers, including NONE for new managers
@@ -458,14 +457,14 @@ const addEmployee = () => {
             roles.push(res[i].title);
         }
     });
-
+    
     // pull names of managers from employees for prompt
     // only employees whose manager_id is NULL (NULL = employee is a manager)
     // CONCAT first and last name into one string
     let managerQuery = `SELECT id, CONCAT(first_name, " ", last_name) 
-                        AS full_name
-                        FROM employee 
-                        WHERE manager_id IS NULL`;
+    AS full_name
+    FROM employee 
+    WHERE manager_id IS NULL`;
     db.query(managerQuery, (err, res) => {
         // loop through response, push to manager arrays
         for (var i = 0; i < res.length; i++) {
@@ -473,34 +472,34 @@ const addEmployee = () => {
             managers.push(res[i]);
         }
     });
-
+    
     // prompt for new employee full name, role (sets id), manager (sets id)
     return inquirer
-      .prompt([
-          {
+    .prompt([
+        {
             name: "employeeFirstName",
             message: "Employee's first name?",
             validate: input => input ? true : "First name is required"
-          },
-          {
+        },
+        {
             name: "employeeLastName",
             message: "Employee's last name?",
             validate: input => input ? true : "Last name is required"
-          },
-          {
+        },
+        {
             name: "employeeRole",
             message: "What is this employee's role?",
             type: "list",
             choices: roles
-          },
-          {
+        },
+        {
             name: "employeeManager",
             message: "Who is this employee's manager?",
             type: "list",
             choices: managerName
-          }
-      ])
-      .then((answers) => {
+        }
+    ])
+    .then((answers) => {
         // get manager id from answer, NULL if "None"
         managers.forEach((manager) => {
             if (manager.full_name === answers.employeeManager) {
@@ -509,30 +508,30 @@ const addEmployee = () => {
                 answers.employeeManager = null;
             }
         });
-
+        
         // get role id from answer
         db.query(`SELECT id FROM role WHERE title = "${answers.employeeRole}"`, 
-          (err, res) => {
+        (err, res) => {
             if (err) throw err;
             let empRoleId = res[0].id;
 
             // insert into table using gathered values
             db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) 
-                    VALUES (?,?,?,?)`,
-              [
+            VALUES (?,?,?,?)`,
+            [
                 answers.employeeFirstName,
                 answers.employeeLastName,
                 empRoleId,
                 answers.employeeManager
-              ],
-              (err, res) => {
-                  if (err) throw err;
-                  console.log(`New employee added`);
-                  // re-run show employee table for verification, returns to employee section nav
-                  viewEmployees();
-              });
-          });
-      });
+            ],
+            (err, res) => {
+                if (err) throw err;
+                console.log(`New employee added`);
+                // re-run show employee table for verification, returns to employee section nav
+                viewEmployees();
+            });
+        });
+    });
 };
 
 // DELETE AN EMPLOYEE
@@ -541,94 +540,94 @@ const removeEmployee = () => {
     let employeeName = [];
     // empty array for full record (full name and id)
     let employees = [];
-
+    
     // pull all employee names for prompt
     let empQuery = `SELECT id, CONCAT(first_name, " ", last_name)
-                    AS full_name
-                    FROM employee`;
+    AS full_name
+    FROM employee`;
     db.query(empQuery, (err, res) => {
         // loop through response, push to arrays
         for (var i = 0; i < res.length; i++) {
             employeeName.push(res[i].full_name);
             employees.push(res[i]);
         }
-
+        
         // prompt to select which employee to remove
         return inquirer
-          .prompt({
+        .prompt({
             name: "deleteEmployee",
             message: "Which employee would you like to remove?",
             type: "list",
             choices: employeeName
-          })
-          .then((choice) => {
+        })
+        .then((choice) => {
             // get id based on name match
             employees.forEach((employee) => {
                 if (employee.full_name === choice.deleteEmployee) {
                     choice.deleteEmployee = employee.id;
                 }
             });
-    
+            
             // remove from employee table using id
             db.query(`DELETE FROM employee WHERE ?`,
-              { id: choice.deleteEmployee },
-              (err, res) => {
-                  if (err) throw err;
-                  console.log(`Employee removed`);
+            { id: choice.deleteEmployee },
+            (err, res) => {
+                if (err) throw err;
+                console.log(`Employee removed`);
                   // re-run show employee table for verification, returns to employee section
                   viewEmployees();
-              });
-          });
+                });
+            });
     });
 };
 
 // UPDATE AN EMPLOYEE ROLE
 const updateEmpRole = () => {
-  // empty array to hold employee names for prompt
-  let employeeName = [];
-  // array for full employee record (full name, id, current role_id)
-  let employees = [];
-  // array to hold role titles for prompt
-  let roleTitle = [];
-  // array for full role record (title and id)
-  let roles = [];
-
+    // empty array to hold employee names for prompt
+    let employeeName = [];
+    // array for full employee record (full name, id, current role_id)
+    let employees = [];
+    // array to hold role titles for prompt
+    let roleTitle = [];
+    // array for full role record (title and id)
+    let roles = [];
+  
   // pull employee records for prompt
   const empQuery = `SELECT id, CONCAT(first_name, " ", last_name)
-                  AS full_name
-                  FROM employee`;
+  AS full_name
+  FROM employee`;
   db.query(empQuery, (err, res) => {
       if (err) throw err;
       // loop through response, push to employee arrays
       for (var i = 0; i < res.length; i++) {
           employeeName.push(res[i].full_name);
           employees.push(res[i]);
-      }
-
-      // pull role records for prompt
-      db.query(`SELECT id, title FROM role`, (err, res) => {
-          // loop through response, push to role arrays
-          for (var i = 0; i < res.length; i++) {
+        }
+        
+        // pull role records for prompt
+        db.query(`SELECT id, title FROM role`, (err, res) => {
+            // loop through response, push to role arrays
+            for (var i = 0; i < res.length; i++) {
               roleTitle.push(res[i].title);
               roles.push(res[i]);
-          }
-      });
+            }
+        });
 
       // prompt for which employee and subsequent role to update
       return inquirer
         .prompt([
           {
-            name: "employeeName",
-            message: "Which employee would you like to update?",
-            type: "list",
-            choices: employeeName
-          },
-          {
-            name: "newRole",
-            message: "What is their new role?",
-            type: "list",
-            choices: roleTitle
-          }
+              name: "employeeName",
+              message: "Which employee would you like to update?",
+              type: "list",
+              choices: employeeName
+            },
+            {
+                name: "newRole",
+                message: "What is their new role?",
+                type: "list",
+                choices: roleTitle
+            }
         ])
         .then((answers) => {
             // get employee's id by name match
@@ -637,31 +636,116 @@ const updateEmpRole = () => {
                     answers.employeeName = employee.id;
                 }
             });
-    
+            
             // get role id by title match
             roles.forEach((role) => {
                 if (role.title === answers.newRole) {
                     answers.newRole = role.id;
                 }
             });
-    
+            
             // query to update record using gathered values
             const sql = `UPDATE employee SET role_id = ? WHERE id = ?`;
             db.query(sql,
-              [
-            
+                [
+                    
                     answers.newRole,
                     answers.employeeName
-            
+                    
+                ],
+                (err, res) => {
+                    if (err) throw err;
+                    console.log(`Employee role updated`);
+                    viewEmployees();
+                });
+            });
+        });
+};
+
+// VIEW EMPLOYEES BY MANAGER
+const updateEmpManager = () => {
+    // empty array to hold employee names for prompt
+    let employeeName = [];
+    // array for full employee record (full name, id, current manager_id)
+    let employees = [];
+    // array to hold manager names for prompt
+    let managerName = ["None"];
+    // array to hold full manager record (full name, manager_id)
+    let managers = [];
+
+    // pull employee records for prompt
+    const empQuery = `SELECT id, CONCAT(first_name, " ", last_name) AS full_name FROM employee`;
+    db.query(empQuery, (err, res) => {
+        // loop through response, push to employee arrays
+         // loop through response, push to employee arrays
+        for (var i = 0; i < res.length; i++) {
+            employeeName.push(res[i].full_name);
+            employees.push(res[i]);
+        }
+        
+        // pull employee records for prompt
+        db.query(`SELECT id, 
+                CONCAT(first_name, " ", last_name) AS full_name 
+                FROM employee
+                WHERE manager_id IS NULL`, 
+                (err, res) => {
+                  // loop through response, push to role arrays
+                  for (var i = 0; i < res.length; i++) {
+                      managerName.push(res[i].full_name);
+                      managers.push(res[i]);
+                  }
+        });
+
+        // prompt for which employee and subsequent manager to update
+        return inquirer
+          .prompt([
+              {
+                name: "employee",
+                message: "Which employee would you like to update?",
+                type: "list",
+                choices: employeeName
+              },
+              {
+                name: "newManager",
+                message: "Who is their new manager?",
+                type: "list",
+                choices: managerName
+              }
+          ])
+          .then((answers) => {
+            // get manager id from answer, NULL if "None"
+            managers.forEach((manager) => {
+              if (manager.full_name === answers.newManager) {
+                answers.newManager = manager.id;
+              } else if (answers.newManager === "None") {
+                answers.newManager = null;
+              }
+            });
+
+            // get employee id based on name match
+            employees.forEach((employee) => {
+                if (employee.full_name === answers.employee) {
+                    answers.employee = employee.id;
+                }
+            });
+
+            // update record from gathered values
+            db.query(`UPDATE employee SET manager_id = ? WHERE id = ?`,
+              [
+                  answers.newManager,
+                  answers.employee
               ],
               (err, res) => {
                 if (err) throw err;
-                console.log(`Employee role updated`);
+                console.log(`Employee manager updated`);
                 viewEmployees();
-            });
-        });
-  });
+              });
+          });
+    });
 };
+
+// VIEW EMPLOYEES BY DEPARTMENT
+
 
 // UPDATE AN EMPLOYEE'S MANAGER
 

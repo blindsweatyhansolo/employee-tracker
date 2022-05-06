@@ -42,6 +42,7 @@ const startPrompts = () => {
 
 
 // -- DEPARTMENT FUNCTIONS -- //
+// DEPARTMENT NAV
 const viewDepartmentSection = () => {
     return inquirer
       .prompt({
@@ -105,7 +106,7 @@ const addDepartment = () => {
             { name: answer.deptName },
             (err, res) => {
               if (err) throw err;
-              console.log(`${res.affectedRows} department created`);
+              console.log(`${answer.deptName} department created`);
               viewDepartmentSection();
             })
       });
@@ -157,9 +158,89 @@ const removeDepartment = () => {
 };
 
 // VIEW SALARIES BY DEPARTMENT
+// const viewDepartmentBudget = () => {
+//     // empty arrays for department data
+//     let departmentName = [];
+//     let departments = [];
+
+//     // pull all department names for prompt
+//     const deptQuery = `SELECT name, id FROM department`;
+//     db.query(deptQuery, (err, res) => {
+//         // loop through response, push to array
+//         for (var i = 0; i < res.length; i++) {
+//             departmentName.push(res[i].name);
+//             departments.push(res[i]);
+//         }
+
+//         // prompt to select which department's salaries to view based on name
+//         return inquirer
+//         .prompt(
+//             {
+//                 name: "deptBudget",
+//                 message: "Which department's budget would you like'?",
+//                 type: "list",
+//                 choices: departmentName
+//             }
+//         )
+//         .then((deptChoice) => {
+//             // get id based on name match
+//             departments.forEach((department) => {
+//                 if (department.name === deptChoice.deptBudget) {
+//                     deptChoice.deptBudget = department.id;
+//                 }
+//             });
+
+//             // return combined salaries of all employees in matching dept as budget
+//             const sql = `SELECT SUM(role.salary) AS Deptartment_Budget FROM role WHERE ?`;
+//             db.query(sql, {id: deptChoice.deptBudget}, (err, res) => {
+//                 console.table(res);
+//                 viewDepartmentSection();
+//             });
+//         });
+//     });  
+// };
 
 // -- ROLE FUNCTIONS -- //
+const viewRoleSection = () => {
+    return inquirer
+      .prompt({
+          name: 'roleChoice',
+          message: 'What would you like to do?',
+          type: 'list',
+          choices: [
+              "View all roles",
+              "Add a role",
+              "Remove a role",
+              "Exit"
+          ]
+      })
+      .then((choice) =>{
+          switch (choice.roleChoice){
+              case "View all roles" :
+                  viewRoles();
+                  break;
+              case "Add a role" :
+                  addRole();
+                  break;
+              case "Remove a role" :
+                  removeRole();
+                  break;
+              case "Exit" :
+                  startPrompts();
+                  break; 
+          }
+      })
+};
+
 // VIEW ALL ROLES
+const viewRoles = () => {
+    db.query(`SELECT * FROM role`, (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        viewRoleSection();
+    });
+};
+
 // ADD A ROLE
 // DELETE A ROLE
 

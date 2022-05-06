@@ -151,6 +151,7 @@ const removeDepartment = () => {
                 (err, res) => {
                     if (err) throw err;
                     console.log(`Department deleted`);
+                    // re-run show department table for verification, which then returns to dept section nav
                     viewDepartments();
                 })
         });
@@ -254,71 +255,116 @@ const viewRoles = () => {
 };
 
 // ADD A ROLE
-const addRole = () => {
-    // empty array to hold department name
-    let departmentName = [];
-    // empty array to hold department name and id
-    let departments = [];
+// const addRole = () => {
+//     // empty array to hold department name
+//     let departmentName = [];
+//     // empty array to hold department name and id
+//     let departments = [];
 
-    // pull all department names for prompt
-    const deptQuery = `SELECT name, id FROM department`;
-    db.query(deptQuery, (err, res) => {
-        // loop through response, push to array
+//     // pull all department names for prompt
+//     const deptQuery = `SELECT name, id FROM department`;
+//     db.query(deptQuery, (err, res) => {
+//         // loop through response, push to array
+//         for (var i = 0; i < res.length; i++) {
+//             departmentName.push(res[i].name);
+//             departments.push(res[i]);
+//         }
+
+//         // prompt for new role name
+//         return inquirer
+//         .prompt(
+//             {
+//             name: "roleTitle",
+//             message: "What is the new role's title?",
+//             validate: input => input ? true : "Role title is required."
+//             },
+//             {
+//             name: "roleSalary",
+//             message: "What is the new role's salary?",
+//             validate: input => {
+//                 if (isNaN(input)) {
+//                     return "Salary must be a number";
+//                 }
+//                 return true;
+//             }
+//             },
+//             {
+//                 name: "roleDept",
+//                 message: "Which department does this role belong to?",
+//                 type: 'list',
+//                 choices: departmentName
+//             }
+//         )
+//         .then((answer) => {
+//             // get department id from answer
+//             departments.forEach((department) => {
+//                 if (department.name = answer.roleDept) {
+//                     answer.roleDept = department.id;
+//                 }
+//             });
+    
+//             db.query(`
+//                 INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`,
+//                 [
+//                     answer.roleTitle, 
+//                     answer.salary,
+//                     answer.roleDept
+//                 ],
+//                 (err, res) => {
+//                 if (err) throw err;
+//                 console.log(`Role created`);
+//                 viewRoleSection();
+//                 })
+//         });
+//     })
+// }
+
+// DELETE A ROLE
+const removeRole = () => {
+    // empty array to hold role title value for selection
+    let roleName = [];
+    // empty array to hold role title and id
+    let roles = [];
+
+    // pull all role names for prompt
+    const roleQuery = `SELECT title, id FROM role`;
+    db.query(roleQuery, (err, res) => {
+        // loop through response, push titles to array
         for (var i = 0; i < res.length; i++) {
-            departmentName.push(res[i].name);
-            departments.push(res[i]);
+            roleName.push(res[i].title);
+            roles.push(res[i]);
         }
 
-        // prompt for new role name
+        // prompt to select which role to remove
         return inquirer
-        .prompt(
-            {
-            name: "roleTitle",
-            message: "What is the new role's title?",
-            validate: input => input ? true : "Role title is required."
-            },
-            {
-            name: "roleSalary",
-            message: "What is the new role's salary?",
-            validate: input => {
-                if (isNaN(input)) {
-                    return "Salary must be a number";
-                }
-                return true;
-            }
-            },
-            {
-                name: "roleDept",
-                message: "Which department does this role belong to?",
-                type: 'list',
-                choices: departmentName
-            }
-        )
-        .then((answer) => {
-            // get department id from answer
-            departments.forEach((department) => {
-                if (department.name = answer.roleDept) {
-                    answer.roleDept = department.id;
-                }
-            });
-    
-            db.query(`
-                INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`,
-                [
-                    answer.roleTitle, 
-                    answer.salary,
-                    answer.roleDept
-                ],
-                (err, res) => {
-                if (err) throw err;
-                console.log(`Role created`);
-                viewRoleSection();
-                })
-        });
-    })
+          .prompt(
+              {
+                  name: "deleteRole",
+                  message: "Which role would you like to delete?",
+                  type: "list",
+                  choices: roleName
+              }
+          )
+          .then((roleChoice) => {
+              // get id based on title match
+              roles.forEach((role) => {
+                  if (role.title === roleChoice.deleteRole) {
+                      roleChoice.deleteRole = role.id;
+                  }
+              });
 
-}
-// DELETE A ROLE
+              // remove from role table using id (safer than by title)
+              db.query(`DELETE FROM role WHERE ?`,
+                {id: roleChoice.deleteRole},
+                (err, res) => {
+                    if (err) throw err;
+                    console.log(`Role deleted`);
+                    // re-run show role table for verification, which then returns to role section nav
+                    viewRoles();
+                })
+          });
+    });
+};
 
 // -- EMPLOYEE FUNCTIONS -- //
 // VIEW ALL EMPLOYEES

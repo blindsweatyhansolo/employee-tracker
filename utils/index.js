@@ -9,27 +9,27 @@ const startPrompts = () => {
     return inquirer
       .prompt({
           name: 'nav',
-          message: 'What would you like to do?',
+          message: 'Which section would you like check out?',
           type: 'list',
           choices: [
-              "View all departments",
-              "View all employees",
-              "View all roles",
+              "Departments",
+              "Employees",
+              "Roles",
               "Exit"
           ]
       })
       .then((choice) => {
           switch (choice.nav){
-            case "View all departments" :
-              viewDepartments();
+            case "Departments" :
+              viewDepartmentSection();
               break;
 
-            case "View all employees" :
-              viewEmployees();
+            case "Employees" :
+              viewEmployeeSection();
               break;
             
-            case "View all roles" :
-              viewRoles();
+            case "Roles" :
+              viewRoleSection();
               break;
 
             case "Exit" :
@@ -42,7 +42,51 @@ const startPrompts = () => {
 
 
 // -- DEPARTMENT FUNCTIONS -- //
+const viewDepartmentSection = () => {
+    return inquirer
+      .prompt({
+          name: 'deptChoice',
+          message: 'What would you like to do?',
+          type: 'list',
+          choices: [
+              "View all departments",
+              "Add a department",
+              "Remove a department",
+              "View budget by department",
+              "Exit"
+          ]
+      })
+      .then((choice) =>{
+          switch (choice.deptChoice){
+              case "View all departments" :
+                  viewDepartments();
+                  break;
+              case "Add a department" :
+                  addDepartment();
+                  break;
+              case "Remove a department" :
+                  removeDepartment();
+                  break;
+              case "View budget by department" :
+                  viewDepartmentBudget();
+                  break;
+              case "Exit" :
+                  startPrompts();
+                  break; 
+          }
+      })
+};
+
 // VIEW ALL DEPARTMENTS
+const viewDepartments = () => {
+    const sql = `SELECT * FROM department`;
+
+    db.query(sql, (err, res) => {
+        console.table(res);
+        viewDepartmentSection();
+    });
+};
+
 // VIEW SALARIES BY DEPARTMENT
 // ADD A DEPARTMENT
 // DELETE A DEPARTMENT

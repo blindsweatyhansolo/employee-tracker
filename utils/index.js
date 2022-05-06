@@ -88,6 +88,7 @@ const viewDepartments = () => {
     });
 };
 
+// ADD A DEPARTMENT
 const addDepartment = () => {
     // prompt for new dept name, then insert into dept table
     return inquirer
@@ -104,15 +105,58 @@ const addDepartment = () => {
             { name: answer.deptName },
             (err, res) => {
               if (err) throw err;
-              console.table(`${res.affectedRows} department created`);
-              viewDepartments();
+              console.log(`${res.affectedRows} department created`);
+              viewDepartmentSection();
             })
       });
 };
+// DELETE A DEPARTMENT
+const removeDepartment = () => {
+    // empty array to hold department name
+    let departmentName = [];
+    // empty array to hold department name and id
+    let departments = [];
+
+    // pull all department names for prompt
+    const deptQuery = `SELECT name, id FROM department`;
+    db.query(deptQuery, (err, res) => {
+        // loop through response, push to array
+        for (var i = 0; i < res.length; i++) {
+            departmentName.push(res[i].name);
+            departments.push(res[i]);
+        }
+
+        // prompt to select which dept to remove
+        return inquirer
+        .prompt(
+            {
+                name: "deleteDept",
+                message: "Which department would you like to delete?",
+                type: "list",
+                choices: departmentName
+            }
+        )
+        .then((deptChoice) => {
+            // get id based on name match
+            departments.forEach((department) => {
+                if (department.name === deptChoice.deleteDept) {
+                    deptChoice.deleteDept = department.id;
+                }
+            });
+
+            // remove from department table using id
+            db.query(`DELETE FROM department WHERE ?`, 
+                {id: deptChoice.deleteDept},
+                (err, res) => {
+                    if (err) throw err;
+                    console.log(`Department deleted`);
+                    viewDepartments();
+                })
+        });
+    });  
+};
 
 // VIEW SALARIES BY DEPARTMENT
-// ADD A DEPARTMENT
-// DELETE A DEPARTMENT
 
 // -- ROLE FUNCTIONS -- //
 // VIEW ALL ROLES
@@ -130,6 +174,5 @@ const addDepartment = () => {
 
 
 startPrompts();
-
 
 module.exports = startPrompts;

@@ -521,6 +521,7 @@ const addEmployee = () => {
           });
       });
 };
+
 // DELETE AN EMPLOYEE
 const removeEmployee = () => {
     // empty array for employee names
@@ -567,7 +568,88 @@ const removeEmployee = () => {
           });
     });
 };
+
 // UPDATE AN EMPLOYEE ROLE
+const updateEmpRole = () => {
+  // empty array to hold employee names for prompt
+  let employeeName = [];
+  // array for full employee record (full name, id, current role_id)
+  let employees = [];
+  // array to hold role titles for prompt
+  let roleTitle = [];
+  // array for full role record (title and id)
+  let roles = [];
+
+  // pull employee records for prompt
+  const empQuery = `SELECT id, CONCAT(first_name, " ", last_name)
+                  AS full_name
+                  FROM employee`;
+  db.query(empQuery, (err, res) => {
+      if (err) throw err;
+      // loop through response, push to employee arrays
+      for (var i = 0; i < res.length; i++) {
+          employeeName.push(res[i].full_name);
+          employees.push(res[i]);
+      }
+
+      // pull role records for prompt
+      db.query(`SELECT id, title FROM role`, (err, res) => {
+          // loop through response, push to role arrays
+          for (var i = 0; i < res.length; i++) {
+              roleTitle.push(res[i].title);
+              roles.push(res[i]);
+          }
+      });
+
+      // prompt for which employee and subsequent role to update
+      return inquirer
+        .prompt([
+          {
+            name: "employeeName",
+            message: "Which employee would you like to update?",
+            type: "list",
+            choices: employeeName
+          },
+          {
+            name: "newRole",
+            message: "What is their new role?",
+            type: "list",
+            choices: roleTitle
+          }
+        ])
+        .then((answers) => {
+            // get employee's id by name match
+            employees.forEach((employee) => {
+                if (employee.full_name === answers.employeeName) {
+                    answers.employeeName = employee.id;
+                }
+            });
+    
+            // get role id by title match
+            roles.forEach((role) => {
+                if (role.title === answers.newRole) {
+                    answers.newRole = role.id;
+                }
+            });
+    
+            // query to update record using gathered values
+            const sql = `UPDATE employee SET role_id = ? WHERE id = ?`;
+            db.query(sql,
+              [
+            
+                    answers.newRole,
+                    answers.employeeName
+            
+              ],
+              (err, res) => {
+                if (err) throw err;
+                console.log(`Employee role updated`);
+                viewEmployees();
+            });
+        });
+  });
+};
+
 // UPDATE AN EMPLOYEE'S MANAGER
 
 

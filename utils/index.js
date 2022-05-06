@@ -454,7 +454,7 @@ const addEmployee = () => {
                         FROM employee 
                         WHERE manager_id IS NULL`;
     db.query(managerQuery, (err, res) => {
-        // loop through response, push to manager array
+        // loop through response, push to manager arrays
         for (var i = 0; i < res.length; i++) {
             managerName.push(res[i].full_name);
             managers.push(res[i]);
@@ -522,6 +522,51 @@ const addEmployee = () => {
       });
 };
 // DELETE AN EMPLOYEE
+const removeEmployee = () => {
+    // empty array for employee names
+    let employeeName = [];
+    // empty array for full record (full name and id)
+    let employees = [];
+
+    // pull all employee names for prompt
+    let empQuery = `SELECT id, CONCAT(first_name, " ", last_name)
+                    AS full_name
+                    FROM employee`;
+    db.query(empQuery, (err, res) => {
+        // loop through response, push to arrays
+        for (var i = 0; i < res.length; i++) {
+            employeeName.push(res[i].full_name);
+            employees.push(res[i]);
+        }
+
+        // prompt to select which employee to remove
+        return inquirer
+          .prompt({
+            name: "deleteEmployee",
+            message: "Which employee would you like to remove?",
+            type: "list",
+            choices: employeeName
+          })
+          .then((choice) => {
+            // get id based on name match
+            employees.forEach((employee) => {
+                if (employee.full_name === choice.deleteEmployee) {
+                    choice.deleteEmployee = employee.id;
+                }
+            });
+    
+            // remove from employee table using id
+            db.query(`DELETE FROM employee WHERE ?`,
+              { id: choice.deleteEmployee },
+              (err, res) => {
+                  if (err) throw err;
+                  console.log(`Employee removed`);
+                  // re-run show employee table for verification, returns to employee section
+                  viewEmployees();
+              });
+          });
+    });
+};
 // UPDATE AN EMPLOYEE ROLE
 // UPDATE AN EMPLOYEE'S MANAGER
 

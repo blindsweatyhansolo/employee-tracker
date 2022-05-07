@@ -662,7 +662,7 @@ const updateEmpRole = () => {
         });
 };
 
-// VIEW EMPLOYEES BY MANAGER
+// UPDATE AN EMPLOYEE'S MANAGER
 const updateEmpManager = () => {
     // empty array to hold employee names for prompt
     let employeeName = [];
@@ -745,10 +745,121 @@ const updateEmpManager = () => {
 };
 
 // VIEW EMPLOYEES BY DEPARTMENT
+const viewEmployeesByDept = () => {
+    // empty arrays for department records
+    let departmentName = [];
+    let departments = [];
 
+    // pull department records for prompts
+    db.query(`SELECT id, name FROM department`, (err, res) => {
+        // loop through response, push to arrays
+        for (var i = 0; i < res.length; i++) {
+            departmentName.push(res[i].name);
+            departments.push(res[i]);
+        }
 
-// UPDATE AN EMPLOYEE'S MANAGER
+        // prompt for which department to view
+        return inquirer
+          .prompt({
+            name: "dept",
+            message: "Which department?",
+            type: "list",
+            choices: departmentName
+          })
+          .then((choice) => {
+              // get department id based on title match
+              departments.forEach((department) => {
+                  if (department.name === choice.dept) {
+                      choice.dept = department.id;
+                  }
+              })
 
+              // find all employees using department id
+              const sql = `SELECT CONCAT(first_name, " ", last_name) AS Employee,
+                        department.name AS Department FROM employee
+                        JOIN role ON employee.role_id = role.id
+                        JOIN department ON role.department_id = department.id
+                        `;
+              db.query(sql, [choice.dept], (err, res) => {
+                  if (err) throw err;
+                  console.table(res);
+                  viewEmployeeSection();
+              });
+          });
+    });
+};
+
+// VIEW EMPLOYEES BY MANAGER
+const viewEmployeesByManager = () => {
+    // empty array to hold employee records
+    let employees = [];
+    // empty array to hold manager ids
+    let managerIds = [];
+
+    // query to return all manager ids
+    let empQuery = `SELECT CONCAT(first_name, " ", last_name) AS full_name, manager_id, employee.id FROM employee`;
+    db.query(empQuery, (err, res) => {
+        // loop through response, push to array
+        for (var i = 0; i < res.length; i++) {
+            employees.push(res[i]);
+
+            // if employee's manager_id is NOT null (meaning they are NOT a manager), push employee's manager_id to array
+            if (res[i].manager_id !== null) {
+                managerIds.push(res[i].manager_id);
+            }
+        }
+
+        // array for manager names based on ids
+        let managerName = [];
+
+        // return manager name based on id
+        // IN operator used to specify multiple values in the WHERE clause
+        // managerIds values inserted as values
+        let managerQuery = `SELECT CONCAT(first_name, " ", last_name) 
+                            AS full_name FROM employee 
+                            WHERE employee.id IN (${managerIds})`;
+        db.query(managerQuery, (err, res) => {
+            // loop through response, push to array
+            for (var i = 0; i < res.length; i++) {
+                managerName.push(res[i].full_name);
+            }
+
+            // prompts for selecting which manager to view employees by
+            return inquirer
+              .prompt({
+                  name: "manager",
+                  message: "Which manager's team would you like to view?",
+                  type: "list",
+                  choices: managerName
+              })
+              .then((choice) => {
+                // get id of manager based on choice
+                employees.forEach((employee) => {
+                    if (employee.full_name === choice.manager) {
+                        choice.manager = employee.id;
+                    }
+                });
+    
+                // show all employees with manager_id that matches the manager employee.id
+                let sql = ` SELECT employee.id AS id, 
+                            CONCAT(employee.first_name, ' ', employee.last_name) AS employee, 
+                            role.title AS role, 
+                            department.name AS department, 
+                            role.salary AS salary FROM employee 
+                            LEFT JOIN role ON employee.role_id = role.id 
+                            LEFT JOIN employee manager ON employee.manager_id = manager.id 
+                            LEFT JOIN department ON role.department_id = department.id 
+                            WHERE employee.manager_id = ?`;
+                db.query(sql, [choice.manager], (err, res) => {
+                    if (err) throw err;
+                    console.table(res);
+                    viewEmployeeSection();
+                });
+              });
+            });
+            
+        });
+};
 
 startPrompts();
 

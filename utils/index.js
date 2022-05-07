@@ -762,7 +762,7 @@ const viewEmployeesByDept = () => {
         return inquirer
           .prompt({
             name: "dept",
-            message: "Which department?",
+            message: "Which department would you like to view?",
             type: "list",
             choices: departmentName
           })
@@ -775,11 +775,13 @@ const viewEmployeesByDept = () => {
               })
 
               // find all employees using department id
-              const sql = `SELECT CONCAT(first_name, " ", last_name) AS Employee,
-                        department.name AS Department FROM employee
-                        JOIN role ON employee.role_id = role.id
-                        JOIN department ON role.department_id = department.id
-                        `;
+              const sql = `SELECT employee.id AS id, 
+                        department.name AS Department, 
+                        CONCAT(employee.first_name, ' ', employee.last_name) AS Employee, 
+                        role.salary AS Salary FROM employee 
+                        LEFT JOIN role ON employee.role_id = role.id 
+                        LEFT JOIN department ON role.department_id = department.id 
+                        WHERE role.department_id = ?`;
               db.query(sql, [choice.dept], (err, res) => {
                   if (err) throw err;
                   console.table(res);
@@ -857,7 +859,6 @@ const viewEmployeesByManager = () => {
                 });
               });
             });
-            
         });
 };
 

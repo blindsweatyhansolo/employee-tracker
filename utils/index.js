@@ -6,16 +6,28 @@ const db = require('../db/connection');
 
 // starting navigation prompts
 const startPrompts = () => {
+
+    console.log(
+        `
+        .--.
+        |__| .-------.
+        |=.| |.-----.|      
+        |--| || JAS ||  
+        |  | |'-----'|  Employee Tracker
+        |__|~')_____('______________2022_
+    `
+    );
+
     return inquirer
       .prompt({
           name: 'nav',
-          message: 'Which section would you like check out?',
+          message: 'Which section would you like to view?',
           type: 'list',
           choices: [
               "Departments",
               "Employees",
               "Roles",
-              "Exit"
+              "[Exit]"
           ]
       })
       .then((choice) => {
@@ -32,7 +44,7 @@ const startPrompts = () => {
               viewRoleSection();
               break;
 
-            case "Exit" :
+            case "[Exit]" :
               console.log(`Goodbye!`);
               db.end();
               break;
@@ -43,6 +55,12 @@ const startPrompts = () => {
 // -- DEPARTMENT FUNCTIONS -- //
 // DEPARTMENT NAV
 const viewDepartmentSection = () => {
+    console.log(`
+    -------------------
+    -   DEPARTMENTS   -
+    -------------------
+    `);
+
     return inquirer
       .prompt({
           name: 'deptChoice',
@@ -53,7 +71,7 @@ const viewDepartmentSection = () => {
               "Add a department",
               "Remove a department",
               "View budget by department",
-              "Exit"
+              "[Back]"
           ]
       })
       .then((choice) =>{
@@ -70,7 +88,7 @@ const viewDepartmentSection = () => {
               case "View budget by department" :
                   viewDepartmentBudget();
                   break;
-              case "Exit" :
+              case "[Back]" :
                   startPrompts();
                   break; 
           }
@@ -79,7 +97,7 @@ const viewDepartmentSection = () => {
 
 // VIEW ALL DEPARTMENTS
 const viewDepartments = () => {
-    const sql = `SELECT * FROM department`;
+    const sql = `SELECT department.id AS ID, name AS Name FROM department`;
 
     db.query(sql, (err, res) => {
         if (err) throw err;
@@ -214,6 +232,12 @@ const viewDepartmentBudget = () => {
 // -- ROLE FUNCTIONS -- //
 // ROLE NAV
 const viewRoleSection = () => {
+    console.log(`
+    -------------------
+    -      ROLES      -
+    -------------------
+    `);
+
     // prompt to navigate role functions
     return inquirer
       .prompt({
@@ -224,7 +248,7 @@ const viewRoleSection = () => {
               "View all roles",
               "Add a role",
               "Remove a role",
-              "Exit"
+              "[Back]"
           ]
       })
       .then((choice) =>{
@@ -238,7 +262,7 @@ const viewRoleSection = () => {
               case "Remove a role" :
                   removeRole();
                   break;
-              case "Exit" :
+              case "[Back]" :
                   startPrompts();
                   break; 
           }
@@ -247,10 +271,11 @@ const viewRoleSection = () => {
 
 // VIEW ALL ROLES
 const viewRoles = () => {
-    db.query(`SELECT title, role.id, department.name AS department, salary 
+    db.query(`SELECT role.id AS ID, title AS Title, department.name AS Department, salary AS Salary 
             FROM role 
             LEFT JOIN department 
-            ON role.department_id = department.id`, 
+            ON role.department_id = department.id
+            ORDER BY department.name DESC`, 
             (err, res) => {
               if (err) throw err;
               console.table(res);
@@ -346,7 +371,7 @@ const removeRole = () => {
           .prompt(
               {
                   name: "deleteRole",
-                  message: "Which role would you like to delete?",
+                  message: "Which role would you like to remove?",
                   type: "list",
                   choices: roleName
               }
@@ -388,7 +413,7 @@ const viewEmployeeSection = () => {
               "Remove an employee",
               "Update an employee's Role",
               "Update an employee's Manager",
-              "Exit"
+              "[Back]"
           ]
       })
       .then((choice) => {
@@ -414,7 +439,7 @@ const viewEmployeeSection = () => {
               case "Update an employee's Manager" :
                   updateEmpManager();
                   break;
-              case "Exit" :
+              case "[Back]" :
                   startPrompts();
                   break;
           }

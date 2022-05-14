@@ -19,11 +19,9 @@ SO THAT I can organize and plan my business
 ```
 
 ## [Installation:](#table-of-contents)
-To install the required dependencies, run the following commands:
+To install the required dependencies, run the following command:
 ```
-npm i inquirer
-npm i mysql2
-npm i console.table
+npm install
 ```
 
 ## [Usage:](#table-of-contents)
@@ -31,7 +29,7 @@ npm i console.table
 
 This app runs from the command line. After cloning the repo and installing dependencies, invoke application with:
 ```
-node index.js
+npm start
 ```
 [Live Demo Gif](placeholder)
 

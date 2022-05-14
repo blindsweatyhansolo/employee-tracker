@@ -19,10 +19,15 @@ SO THAT I can organize and plan my business
 ```
 
 ## [Installation:](#table-of-contents)
-To install the required dependencies, run the following command:
+1. To install the required dependencies, run the following command:
 ```
 npm install
 ```
+2. Make a copy of the `.env.EXAMPLE` file, change it to just `.env` and fill out the required fields with your MySQL info.
+3. Database, table creation and seed data has been provided within the `db` folder. Connect to MySQL in the command-line and run `source db/schema.sql` and `source db/seeds.sql` to manually seed the data from the provided scripts.
+
+![Demo of seeding data](./assets/seedingDemo.gif) 
+
 
 ## [Usage:](#table-of-contents)
 [Employee Tracker: Walkthrough Video](placeholder)
@@ -31,7 +36,7 @@ This app runs from the command line. After cloning the repo and installing depen
 ```
 npm start
 ```
-[Live Demo Gif](placeholder)
+![Live Demo Gif](./assets/demo.gif)
 
 ## [Contributions:](#table-of-contents)
 Contributors and feedback always welcome!
@@ -41,6 +46,7 @@ Project Technologies:
 * Node.js
 * MySQL
 * [Inquirer](https://www.npmjs.com/package/inquirer)
+* [dotenv](https://www.npmjs.com/package/dotenv)
 
 
 _If you have any questions about the application, or would like to become a contributor, please contact me using the information below:_

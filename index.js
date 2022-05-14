@@ -2,7 +2,7 @@
 // IF TOO BLOATED, SEPARATE FUNCTIONS AND EXPORT MODULES
 const inquirer = require('inquirer');
 const cTable = require('console.table');
-const db = require('../db/connection');
+const db = require('./db/connection');
 
 // starting navigation prompts
 const startPrompts = () => {

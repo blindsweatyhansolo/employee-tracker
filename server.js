@@ -1,5 +1,5 @@
 const db = require('./db/connection');
-const start = require('./utils');
+const start = require('.');
 const PORT = process.env.PORT || 3001;
 
 // Start server after DB connection

@@ -30,7 +30,7 @@ npm install
 
 
 ## [Usage:](#table-of-contents)
-[Employee Tracker: Walkthrough Video](placeholder)
+[Employee Tracker: Walkthrough Video](https://drive.google.com/file/d/1pMD4pYd1leWnF2j4OzvBGH5t9uydJcAN/view?usp=sharing)
 
 This app runs from the command line. After cloning the repo and installing dependencies, invoke application with:
 ```

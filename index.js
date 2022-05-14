@@ -275,7 +275,7 @@ const viewRoles = () => {
             FROM role 
             LEFT JOIN department 
             ON role.department_id = department.id
-            ORDER BY department.name DESC`, 
+           `, 
             (err, res) => {
               if (err) throw err;
               console.table(res);
@@ -457,7 +457,8 @@ const viewEmployees = () => {
                 CONCAT(e.first_name, ' ' ,e.last_name) AS Manager FROM employee
                 INNER JOIN role on role.id = employee.role_id 
                 INNER JOIN department on department.id = role.department_id 
-                LEFT JOIN employee e on employee.manager_id = e.id`
+                LEFT JOIN employee e on employee.manager_id = e.id
+                ORDER BY employee.id`
     db.query(sql, (err, res) => {
         if (err) throw err;
         console.table(res);
